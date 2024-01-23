@@ -25,16 +25,27 @@ def generate_planes():
     Defines planes by the three vectors that form the "axes" of the
     plane. Should work with arbitrary number of planes and planes of
     arbitrary orientation.
+
+    Fix: https://github.com/NVlabs/eg3d/issues/67
+    
+    Using col vector representation (torch.linalg.inv will change it into row vector and right mul row coordinates)
+    xyz -> xyz
+    xyz -> xzy
+    xyz -> zyx
+    [:2] will generate xy, xz, zy
     """
-    return torch.tensor([[[1, 0, 0],
+    return torch.tensor([
+                            [[1, 0, 0], 
                             [0, 1, 0],
                             [0, 0, 1]],
+
                             [[1, 0, 0],
                             [0, 0, 1],
                             [0, 1, 0]],
+
                             [[0, 0, 1],
-                            [1, 0, 0],
-                            [0, 1, 0]]], dtype=torch.float32)
+                            [0, 1, 0],
+                            [1, 0, 0]]], dtype=torch.float32)
 
 def project_onto_planes(planes, coordinates):
     """
