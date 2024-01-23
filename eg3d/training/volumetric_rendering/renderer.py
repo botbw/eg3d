@@ -25,16 +25,27 @@ def generate_planes():
     Defines planes by the three vectors that form the "axes" of the
     plane. Should work with arbitrary number of planes and planes of
     arbitrary orientation.
+
+    Fix: https://github.com/NVlabs/eg3d/issues/67
+    
+    Using col vector representation (torch.linalg.inv will change it into row vector and right mul row coordinates)
+    xyz -> xyz
+    xyz -> xzy
+    xyz -> zyx
+    [:2] will generate xy, xz, zy
     """
-    return torch.tensor([[[1, 0, 0],
+    return torch.tensor([
+                            [[1, 0, 0], 
                             [0, 1, 0],
                             [0, 0, 1]],
+
                             [[1, 0, 0],
                             [0, 0, 1],
                             [0, 1, 0]],
+
                             [[0, 0, 1],
-                            [1, 0, 0],
-                            [0, 1, 0]]], dtype=torch.float32)
+                            [0, 1, 0],
+                            [1, 0, 0]]], dtype=torch.float32)
 
 def project_onto_planes(planes, coordinates):
     """
@@ -61,6 +72,7 @@ def sample_from_planes(plane_axes, plane_features, coordinates, mode='bilinear',
     coordinates = (2/box_warp) * coordinates # TODO: add specific box bounds
 
     projected_coordinates = project_onto_planes(plane_axes, coordinates).unsqueeze(1)
+    # TODO @botbw: projected_coordinates are not normed here? (although they are in [-1, 1])
     output_features = torch.nn.functional.grid_sample(plane_features, projected_coordinates.float(), mode=mode, padding_mode=padding_mode, align_corners=False).permute(0, 3, 2, 1).reshape(N, n_planes, M, C)
     return output_features
 
